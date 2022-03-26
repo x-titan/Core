@@ -1,0 +1,21 @@
+{
+  "name": "core",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/x-titan/Core.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/x-titan/Core/issues"
+  },
+  "homepage": "https://github.com/x-titan/Core#readme"
+}

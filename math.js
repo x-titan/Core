@@ -1,6 +1,13 @@
-/** @returns {value is number} */
+/** @return {value is number} */
 export function isNumber(value) {
   return isFinite(value)
+}
+/** @return {value is number} */
+isNumber._ = function (value) {
+  const t = typeof value === "number"
+  const nan = !(value !== value)
+  const inf = !(value === Infinity || value === -Infinity)
+  return t && nan && inf
 }
 /**
  * @param {any} value
@@ -8,7 +15,7 @@ export function isNumber(value) {
  * @throws {TypeError}
  */
 export function validNumber(value) {
-  if (!isFinite(value))
+  if (!isNumber(value))
     throw new TypeError("Type error. Required a number")
 }
 validNumber.all = function (...values) {
@@ -22,22 +29,30 @@ export function randomSeed(seed) {
     seed = (seed * 9301 + 49297) % 233280
     return seed / 233280
   } : Math.random
-  /**
-   * @param {number} min
-   * @param {number} max
-   */
-  return function (min, max) {
-    min = isNumber(min) ? min : 0
-    max = isNumber(max) ? max : 1
+  return function (min = 0, max = 1) {
+    if (!isNumber(min)) min = 0
+    if (!isNumber(max)) {
+      if (min < 1) {
+        max = 1
+      } else {
+        max = min
+        min = 0
+      }
+    }
+    if (min > max) {
+      const temp = max
+      max = min
+      min = temp
+    }
     return min + _random() * (max - min)
   }
 }
+export const random = randomSeed()
 /**
  * @param {number} inmin
  * @param {number} inmax
  * @param {number} outmin
  * @param {number} outmax
- * @returns 
  */
 export function normalizer(inmin, inmax, outmin, outmax) {
   validNumber.all(inmin, inmax, outmin, outmax)
@@ -50,7 +65,9 @@ export function normalizer(inmin, inmax, outmin, outmax) {
     return outmin + ((outmax - outmin) * (value - inmin) / inmax)
   }
 }
-export const random = randomSeed()
+export function randInt(start = 0, end = 1) {
+  return round(random(start, end))
+}
 /**
  * @param {number} value
  * @param {number} min
@@ -95,8 +112,8 @@ export function ceil(value) {
 }
 export function round(value) {
   validNumber(value)
-  return value % 1 >= 0.5 ?
-    ceil(value) : ~~value
+  return value % 1 < 0.5 ?
+    ~~value : ceil(value)
 }
 export function toInt(value) {
   validNumber(value)
@@ -107,13 +124,60 @@ export function toDecimal(value) {
   return round(value * 10) / 10
 }
 
+function randChar_(start, end) {
+  return String.fromCharCode(randInt(start, end))
+}
+
+function randUpperLetter() {
+  const UPPERCASE_A = 65
+  const UPPER_END_Z = 90
+  return randChar_(UPPERCASE_A, UPPER_END_Z)
+}
+function randLowerLetter() {
+  const LOWERCASE_A = 97
+  const LOWER_END_Z = 122
+  return randChar_(LOWERCASE_A, LOWER_END_Z)
+}
+function randDigitChar() {
+  const DIGIT_0 = 48
+  const DIGIT_9 = 57
+  return randChar_(DIGIT_0, DIGIT_9)
+}
+function randLetter() {
+  return random(-1, 1) > 0 ? randUpperLetter() : randLowerLetter()
+}
+function _Range(start, stop, step) {
+  if (!(this instanceof _Range))
+    return new _Range(start, stop, step)
+  this.start = start
+  this.stop = stop
+  this.step = step
+  this[Symbol.iterator] = ()=>{
+    const len = stop
+      let i = start - step
+      const _iterator = {
+        next() {
+          const done = _iterator.isDone
+          return { done, value: done ? null : i += step }
+        },
+        get isDone() {
+          const _i = i + step
+          return !((step > 0) ?
+            _i < len : _i > len)
+        },
+        get self() { return _range }
+      }
+      return _iterator
+  }
+}
 function baseRange(start, stop, step) {
+
   const _range = {
-    [Symbol.iterator]: () => {
+    [Symbol.iterator]() {
       const len = stop
       let i = start - step
       const _iterator = {
-        next: () => {
+        next() {
           const done = _iterator.isDone
           return { done, value: done ? null : i += step }
         },
@@ -132,12 +196,11 @@ function baseRange(start, stop, step) {
   }
   return _range
 }
-
 export function range(start, stop, step) {
-  validNumber(start)
   if (step === 0) throw new Error("Step not a zero value")
+  if (!isNumber(start)) start = 0
   if (!isNumber(stop)) {
-    stop = start
+    stop = start || 1
     start = 0
   }
   if (!isNumber(step))
@@ -147,3 +210,4 @@ export function range(start, stop, step) {
     throw new Error("Reverse step error")
   return baseRange(start, stop, step)
 }
+console.log(range().constructor) 
