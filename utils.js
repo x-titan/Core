@@ -111,4 +111,3 @@ const _ = {
 }
 const Utils = freeze(assign(new class Utils extends Base { }, _))
 export default Utils
-globalThis.u = Utils

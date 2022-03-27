@@ -1,9 +1,7 @@
 const NAMESPACE = Symbol("namespace")
 const NAME = Symbol("name")
 
-const isString = value => {
-  return typeof value === "string"
-}
+const isString = value => typeof value === "string"
 const validString = value => {
   if (!isString(value))
     throw new TypeError("Type error. Required a string")
