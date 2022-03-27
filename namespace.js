@@ -12,7 +12,7 @@ const validFunc = value => {
   if (typeof value !== "function")
     throw new Error("Type error. Required a function")
 }
-export class NameSpace {
+export default class NameSpace {
   /** @type {Set<string>} */
   constructor(name) {
     validString(name)
@@ -82,6 +82,3 @@ export class NameSpace {
       ns[NAME] : null
   }
 }
-globalThis.ns = NameSpace
-let a = new ns("a")
-a.space

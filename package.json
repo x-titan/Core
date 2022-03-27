@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "type": "module",
+  "private": true,
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -17,5 +19,7 @@
   "bugs": {
     "url": "https://github.com/x-titan/Core/issues"
   },
-  "homepage": "https://github.com/x-titan/Core#readme"
+  "homepage": "https://github.com/x-titan/Core#readme",
+  "dependencies": {},
+  "devDependencies": {}
 }
