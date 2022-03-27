@@ -3,9 +3,9 @@ const { iterator } = Symbol
 const { PI, E, SQRT2, sqrt } = Math
 
 //#region Constants
-export const CONST = freeze({
+export const CONST = {
   /** @type {3.1415926535897932} */
-  PI: PI,
+  PI,
   /** @type {6.2831853071795865} */
   PI2: PI * 2,
   /** @type {6.2831853071795865} */
@@ -16,7 +16,8 @@ export const CONST = freeze({
   PHI: (1 + sqrt(5)) / 2,
   /** @type {1.4142135623730951} */
   SQRT2
-})
+}
+Object.freeze(CONST)
 //#endregion
 
 //#region IsNumber
@@ -182,7 +183,10 @@ function randLetter() {
   ][randInt(0, 3)]()
 }
 const uuidList = new Set()
-/** @param {number} len */
+/** 
+ * @param {number} len
+ * @return {string}
+ */
 export function UUID(len) {
   if (len <= 0)
     throw new Error("Len not be equal a positive value")
