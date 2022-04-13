@@ -22,17 +22,18 @@ const _ = {
   },
   define: defineProperty,
   mixin(...sources) {
-    const t = typeof this
+    const self = sources[0]
+    const t = typeof self
     if (!(t === "object" || t === "function"))
       return void 0
     for (const source of sources)
       if (typeof source === "object")
         for (const key in source)
           if (hasown.call(source, key))
-            this[key] = source[key]
-    return this
+            self[key] = source[key]
+    return self
   },
-  default(target, def) { return _.mixin.call(new Core, def, target) },
+  default(target, def) { return _.mixin(def, target) },
   toString() {
     if (this === undefined) return "[undefined]"
     if (this === null) return "[null]"
@@ -52,6 +53,12 @@ const _ = {
     if (Array.isArray(target)) return "array"
     return typeof target
   },
+  equals(a, b) {
+    if (a === b)
+      return a !== 0 || 1 / a === 1 / b
+    else
+      return a !== a && b !== b
+  },
   /**
    * @param {new *} constructor
    */
@@ -69,15 +76,6 @@ const _ = {
       if (hasown.call(obj, key))
         defineProperty(this, key, getown(obj, key))
     return this
-  },
-  padLeft(num, char) {
-    if (typeof this !== "string") return void 0
-    if (!(typeof num === "number" && num % 1 === 0 && num > 0))
-      throw new Error("Requiered a number. Natural number over zero")
-    if (!(typeof char === "string" && char.length === 1))
-      throw new Error("Requiered a char. Length equals to one")
-    return (num = num - res.length) > 0 ?
-      char.repeat(num) + this : this
   },
   forIn(obj, fn, stoppable) {
     for (const k in obj)
@@ -107,7 +105,9 @@ const _ = {
         this.splice(i, 1)
     }, false)
     return this
-  }
+  },
+  hasOwnProperty: hasown,
+  has: hasown
 }
 const Utils = freeze(assign(new class Utils extends Base { }, _))
 export default Utils
