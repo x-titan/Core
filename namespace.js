@@ -1,3 +1,5 @@
+import Emit from "./emit.js"
+
 const NAMESPACE = Symbol("namespace")
 const NAME = Symbol("name")
 
@@ -10,13 +12,15 @@ const validFunc = value => {
   if (typeof value !== "function")
     throw new Error("Type error. Required a function")
 }
-export default class NameSpace {
-  /** @type {Set<string>} */
+export default class NameSpace extends Emit {
+  /** @param {string} name */
   constructor(name) {
     validString(name)
-    if (NameSpace.has(name))
-      throw new Error("NameSpace has been used")
-
+    if (NameSpace.has(name)) {
+      console.warn("NameSpace " + name +
+        "has been used. Retured a that ns")
+      return NameSpace.get(name)
+    }
     NameSpace[NAMESPACE][name] = this
     this[NAME] = name
     Object.defineProperty(this, "space", {

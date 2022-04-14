@@ -12,12 +12,21 @@ const { defineProperty, toString } = Reflect
 const _ = {
   /**
    * @param {(value, index: number, array: this) => void} fn
+   * @param {boolean} stoppable
    */
   each(fn, stoppable) {
-    let i = this.length
-    while (i--)
-      if (fn(this[i], i, this) ===
-        true && stoppable === true) break
+    if (typeof this[iterator] === "function") {
+      let i = 0
+      for (const item of this) {
+        if (fn(item, i++, this) ===
+          true && stoppable === true) break
+      }
+    } else {
+      let i = this.length
+      while (i--)
+        if (fn(this[i], i, this) ===
+          true && stoppable === true) break
+    }
     return this
   },
   define: defineProperty,
@@ -59,9 +68,7 @@ const _ = {
     else
       return a !== a && b !== b
   },
-  /**
-   * @param {new *} constructor
-   */
+  /** @param {new *} constructor */
   instance(target, constructor) {
     if (constructor === undefined || constructor === null)
       return target?.constructor?.name || null
@@ -109,5 +116,6 @@ const _ = {
   hasOwnProperty: hasown,
   has: hasown
 }
-const Utils = freeze(assign(new class Utils extends Base { }, _))
+const Utils = freeze(assign(
+  new class Utils extends Base { }, _))
 export default Utils
