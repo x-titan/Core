@@ -26,6 +26,20 @@ export default class Base extends Core {
     return this
   }
 
+  /** @param {new unknown | string} value */
+  is(value) {
+    if (value === null || value === undefined) {
+      return false
+    }
+    if (typeof value === "string") {
+      return this.constructor.name === value
+    }
+    if (typeof value === "function") {
+      return this instanceof value
+    }
+    return false
+  }
+
   mixin(...sources) {
     const self = this
     const t = typeof self

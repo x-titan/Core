@@ -10,18 +10,18 @@ const {
 } = Object
 const {
   defineProperty: define,
-  toString
+  toString,
 } = Reflect
 
 const _ = {
-  /** @param {(value, index: number, array: this) => void} fn */
+  /** @param {(value: unknown, index: number, array: this) => void} fn */
   each(fn, stoppable = false) {
     let i = 0
 
     if (typeof this[iterator] === "function") {
       for (const item of this) {
         if (
-          fn(item, i++, this) === true
+          fn(item, i++, this) === false
           && stoppable === true
         ) break
       }
@@ -30,7 +30,7 @@ const _ = {
       
       while (i--) {
         if (
-          fn(this[i], i, this) === true
+          fn(this[i], i, this) === false
           && stoppable === true
         ) break
       }

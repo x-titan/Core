@@ -1,5 +1,7 @@
 import Base from "./base.js"
 
+const isFunc = (fn) => (typeof fn === "function")
+
 const makeError = (name) => {
   throw new Error(
     "Objects of the Mono class must be in only one instance. "
@@ -15,24 +17,24 @@ const makeError = (name) => {
  *
  * Else `true`. This means that the item is present in the list.
  */
-export default class Mono extends Base {
-  /** @param {Function} onerror Calling on error */
+class Mono extends Base {
+  /** @param {() => throw} onerror Calling on error */
   constructor(onerror) {
     const target = new.target
 
-    if (constructorList.has(target)) {
+    if (ctorList.has(target)) {
       return (typeof onerror === "function"
         ? onerror()
         : makeError(target.name)
       )
     }
 
-    constructorList.add(target)
+    ctorList.add(target)
     super()
   }
 
   /** @param {new unknown} target */
-  static has(target) { return constructorList.has(target) }
+  static has(target) { return ctorList.has(target) }
 
   /**
    * Сhecks whether this item is in the list and returns the result.
@@ -43,7 +45,7 @@ export default class Mono extends Base {
    * Else `true`. This means that the item is present in the list.
    * @param {Object} target `this`
    * @param {*} [target.]
-   * @param {Function} onerror Calling on error
+   * @param {() => throw} onerror Calling on error
    */
   static mixin(target, onerror) {
     if (target === null || typeof target !== "object") {
@@ -54,26 +56,25 @@ export default class Mono extends Base {
 
     if (this.has(cons)) {
       return (
-        is.func(onerror)
+        isFunc(onerror)
           ? onerror()
           : makeError(cons.name)
       )
     }
 
-    constructorList.add(cons)
+    ctorList.add(cons)
     return target
   }
 
   /**
    * @param {new unknown} target
-   * @param {Function} onerror
+   * @param {() => throw} onerror
    * @return {target}
    */
   static mono(target, onerror) {
-    if (
-      typeof target !== "function"
-      || typeof target.constructor !== "function"
-    ) throw new Error("Bad argument. Required class or function")
+    if (isFunc(target) || isFunc(target?.constructor)) {
+      throw new Error("Bad argument. Required class or function")
+    }
 
     const _ = function (...args) {
       return Mono.mixin(new target(...args), onerror)
@@ -81,11 +82,11 @@ export default class Mono extends Base {
 
     try {
       if (!target.prototype) {
-        Object.setPrototypeOf(target.prototype = {})
+        Object.setPrototypeOf(target, target.prototype = {})
       }
 
       target.constructor = target.prototype.constructor = _
-      _.prototype = target.prototype || {}
+      Object.setPrototypeOf(_, _.prototype = target.prototype || {})
     } catch (e) {
       console.warn(
         "Mono error. class "
@@ -98,4 +99,6 @@ export default class Mono extends Base {
   }
 }
 
-const constructorList = new Set([Mono])
+const ctorList = new Set([Mono])
+
+export default Mono
