@@ -15,6 +15,7 @@ export default class Base extends Core {
 
   extend(obj) {
     const t = typeof obj
+
     if (!(t === "object" || t === "function")) {
       throw new Error("Required a object")
     }
@@ -31,10 +32,12 @@ export default class Base extends Core {
     if (value === null || value === undefined) {
       return false
     }
-    if (typeof value === "string") {
+    const t = typeof value
+
+    if (t === "string") {
       return this.constructor.name === value
     }
-    if (typeof value === "function") {
+    if (t === "function") {
       return this instanceof value
     }
     return false

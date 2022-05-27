@@ -6,91 +6,104 @@ const EMITTER = Symbol("emitter")
 
 function validEventName(value) {
   const t = typeof value
-  if (!(t === "string" || t === "symbol") ||
-    (value === "" || /^[0-9]/gm.test(value)))
+
+  if (!(t === "string" || t === "symbol")) {
     throw new TypeError("Invalid event name.")
+  }
 }
 
 function validFunction(value) {
-  if (typeof value !== "function")
+  if (typeof value !== "function") {
     throw new TypeError("Argument not be a Function.")
+  }
 }
 
 const _ = {
   hasEventName(ev) {
-    if (!this[EMITTER]) this[EMITTER] = new Core()
+    if (!this[EMITTER]) {
+      this[EMITTER] = new Core()
+    }
+
     return Utils.has.call(this[EMITTER], ev)
   },
 
-  hasListener(ev, cb) {
-    return this.hasEventName(ev) &&
-      this[ev].indexOf(cb) !== -1
+  hasEventListener(ev, cb) {
+    return (
+      this.hasEventName(ev)
+      && this[ev].indexOf(cb) !== -1
+    )
   },
 
-  on(ev, cb) {
+  addEventListener(ev, cb, opt) {
     validEventName(ev)
     validFunction(cb)
-    if (!_.hasEventName.call(this, ev))
+
+    if (!_.hasEventName.call(this, ev)) {
       this[EMITTER][ev] = []
-    const e = this[EMITTER]
-    if (e[ev].indexOf(cb) === -1)
-      e[ev].push(cb)
-    return this
-  },
+    }
 
-  once(ev, cb) {
-    validEventName(ev)
-    validFunction(cb)
     const self = this
-    if (!_.hasEventName.call(self, ev))
-      self[EMITTER][ev] = []
     const e = self[EMITTER]
-    e[ev].push(function (...args) {
-      cb.apply(this, args)
-      _.removeListenter.call(self, ev, cb)
-    })
-    return this
-  },
 
-  addListener(ev, cb, opt) {
-    validEventName(ev)
-    validFunction(cb)
-    if (!_.hasEventName.call(this, ev))
-      this[EMITTER][ev] = []
-    let fn = _.on
-    if (opt && opt.once === true)
-      fn = _.once
-    fn.call(this, ev, cb)
-    return this
-  },
+    if (e[ev].indexOf(cb) === -1) {
+      if (opt && opt.once === true) {
+        const fn = cb
 
-  removeListenter(ev, cb) {
-    validEventName(ev)
-    validFunction(cb)
-    if (_.hasEventName.call(this, ev)) {
-      const e = this[EMITTER][ev]
-      const i = e.indexOf(cb)
-      if (i !== -1) e.slice(i, 1)
+        cb = function (...args) {
+          fn.apply(this, args)
+          _.removeEventListener.call(self, ev, cb)
+        }
+      }
+
+      e[ev].push(cb)
     }
     return this
   },
 
-  removeAllListener(ev) {
+  removeEventListener(ev, cb) {
+    validEventName(ev)
+    validFunction(cb)
+
+    if (_.hasEventName.call(this, ev)) {
+      const e = this[EMITTER][ev]
+      const i = e.indexOf(cb)
+
+      if (i !== -1) e.splice(i, 1)
+    }
+
+    return this
+  },
+
+  removeAllEventListeners(ev) {
     validEventName(ev)
     _.hasEventName.call(this, ev)
     this[EMITTER][ev] = []
+
     return this
+  },
+
+  on(ev, cb) {
+    return _.addEventListener.call(this, ev, cb)
+  },
+
+  once(ev, cb) {
+    return _.addEventListener.call(this, ev, cb, { once: true })
+  },
+
+  off(ev, cb) {
+    return _.removeEventListener.call(this, ev, cb)
   },
 
   emit(ev, ...args) {
     validEventName(ev)
+
     if (_.hasEventName.call(this, ev)) {
       Utils.each.call(this[EMITTER][ev], (fn) => {
-        fn.apply(undefined, args)
+        fn.apply(this, args)
       })
     }
     return this
-  }
+  },
 }
 
 export default class Emit extends Base {
@@ -98,7 +111,9 @@ export default class Emit extends Base {
 
   static mixin(self) {
     if (typeof self === "object" && self !== null) {
-      if (!self[EMITTER]) self[EMITTER] = new Core()
+      if (!self[EMITTER]) {
+        self[EMITTER] = new Core()
+      }
 
       Utils.mixin(self, _)
     }
@@ -107,4 +122,5 @@ export default class Emit extends Base {
 
   static __EMITTER__ = EMITTER
 }
+
 Object.assign(Emit.prototype, _)

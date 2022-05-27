@@ -27,7 +27,7 @@ const _ = {
       }
     } else {
       i = this.length
-      
+
       while (i--) {
         if (
           fn(this[i], i, this) === false
@@ -91,9 +91,7 @@ const _ = {
     if (a === b) {
       return (a !== 0) || ((1 / a) === (1 / b))
     }
-    else {
-      return (a !== a) && (b !== b)
-    }
+    return (a !== a) && (b !== b)
   },
 
   /** @param {new *} cons */
@@ -108,9 +106,11 @@ const _ = {
     if (this === undefined || this === null) return void 0
 
     const t = typeof obj
+
     if (!(t === "object" || t === "function")) {
       throw new Error("Required a object")
     }
+    
     for (const key in obj) {
       if (hasOwn.call(obj, key)) {
         define(this, key, getDesc(obj, key))
@@ -156,8 +156,7 @@ const _ = {
     if (_.type(this) !== "array") return void 0
 
     _.each.call(this, (item, i) => {
-      if (fn(item, i, this) === false)
-        this.splice(i, 1)
+      if (fn(item, i, this) === false) this.splice(i, 1)
     })
 
     return this
