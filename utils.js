@@ -94,7 +94,10 @@ const _ = {
     return (a !== a) && (b !== b)
   },
 
-  /** @param {new *} cons */
+  /**
+   * @param {new unknown} cons
+   * @return {boolean | string}
+   */
   instance(target, cons) {
     if (cons === undefined || cons === null) {
       return target?.constructor?.name || null
