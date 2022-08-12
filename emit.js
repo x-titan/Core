@@ -1,126 +1,113 @@
+import {
+  is,
+  each,
+  validateType,
+} from "https://x-titan.github.io/utils/index.js"
 import Base from "./base.js"
-import Core from "./core.js"
-import Utils from "./utils.js"
 
-const EMITTER = Symbol("emitter")
+const EMIT = Symbol("Emit")
 
-function validEventName(value) {
+function isEventName(value) {
   const t = typeof value
-
-  if (!(t === "string" || t === "symbol")) {
-    throw new TypeError("Invalid event name.")
-  }
+  return t === "string" || t === "symbol"
 }
 
-function validFunction(value) {
-  if (typeof value !== "function") {
-    throw new TypeError("Argument not be a Function.")
+function initEmit(target, cfg) {
+  validateType(is.obj, target)
+
+  if (!is.obj(target[EMIT])) {
+    target[EMIT] = {}
   }
+
+  if (is.obj(cfg)) {
+    each(cfg.eventList, (name) => {
+      if (isEventName(name)) { target[EMIT][name] = [] }
+    })
+    if (is.bool(cfg.configurable)) {
+
+    }
+  }
+
+  return target[EMIT]
 }
 
-const _ = {
-  hasEventName(ev) {
-    if (!this[EMITTER]) {
-      this[EMITTER] = new Core()
+function getEvent(target, name) {
+  const e = initEmit(target)
+  validateType(isEventName, name)
+  if (!e[name]) { e[name] = [] }
+  return e[name]
+}
+
+function detachEvent(target, eventName, callback) {
+  validateType(is.func, callback)
+
+  const e = getEvent(target, eventName)
+  const i = e.indexOf(callback)
+
+  if (i !== -1) {
+    e.splice(i, 1)
+    return true
+  }
+
+  return false
+}
+
+function attachEvent(target, eventName, callback, config) {
+  const e = getEvent(target, eventName)
+  validateType(is.func, callback)
+  e.push(callback)
+
+  if (isObj(config)) {
+    if (typeof config.once === "boolean") {
+      callback.once = config.once
     }
-
-    return Utils.has.call(this[EMITTER], ev)
-  },
-
-  hasEventListener(ev, cb) {
-    return (
-      this.hasEventName(ev)
-      && this[ev].indexOf(cb) !== -1
-    )
-  },
-
-  addEventListener(ev, cb, opt) {
-    validEventName(ev)
-    validFunction(cb)
-
-    if (!_.hasEventName.call(this, ev)) {
-      this[EMITTER][ev] = []
+    if (config.thisArg) {
+      callback.thisArg = config.thisArg
     }
+  }
 
-    const self = this
-    const e = self[EMITTER]
+  return true
+}
 
-    if (e[ev].indexOf(cb) === -1) {
-      if (opt && opt.once === true) {
-        const fn = cb
+function executeEvent(target, eventName, config) {
+  const e = getEvent(target, eventName)
+  let args = []
 
-        cb = function (...args) {
-          fn.apply(this, args)
-          _.removeEventListener.call(self, ev, cb)
-        }
-      }
+  if (is.obj(config)) {
+    if (is.arr(config.args)) args = config.args
+  }
 
-      e[ev].push(cb)
+  each.reverse(e, (fn, i) => {
+    fn.apply(fn.thisArg, args)
+    if (fn.once) {
+      e.splice(i, 0)
     }
-    return this
-  },
-
-  removeEventListener(ev, cb) {
-    validEventName(ev)
-    validFunction(cb)
-
-    if (_.hasEventName.call(this, ev)) {
-      const e = this[EMITTER][ev]
-      const i = e.indexOf(cb)
-
-      if (i !== -1) e.splice(i, 1)
-    }
-
-    return this
-  },
-
-  removeAllEventListeners(ev) {
-    validEventName(ev)
-    _.hasEventName.call(this, ev)
-    this[EMITTER][ev] = []
-
-    return this
-  },
-
-  on(ev, cb) {
-    return _.addEventListener.call(this, ev, cb)
-  },
-
-  once(ev, cb) {
-    return _.addEventListener.call(this, ev, cb, { once: true })
-  },
-
-  off(ev, cb) {
-    return _.removeEventListener.call(this, ev, cb)
-  },
-
-  emit(ev, ...args) {
-    validEventName(ev)
-
-    if (_.hasEventName.call(this, ev)) {
-      Utils.each.call(this[EMITTER][ev], (fn) => {
-        fn.apply(this, args)
-      })
-    }
-    return this
-  },
+  })
 }
 
 export default class Emit extends Base {
-  [EMITTER] = new Core()
+  constructor() {
 
-  static mixin(self) {
-    if (typeof self === "object" && self !== null) {
-      if (!self[EMITTER]) {
-        self[EMITTER] = new Core()
-      }
-
-      Utils.mixin(self, _)
-    }
-    return self
   }
-
-  static __EMITTER__ = EMITTER
+  addEventListener(eventName, callback, config) {
+    return attachEvent(this, eventName, callback, config)
+  }
+  on(eventName, callback) {
+    return attachEvent(this, eventName, callback, { once: false })
+  }
+  once(eventName, callback) {
+    return attachEvent(this, eventName, callback, { once: true })
+  }
+  removeEventListener(eventName, callback) {
+    return detachEvent(this, eventName, callback)
+  }
+  removeAllEventListener(eventName) {
+    return initEmit(this, { eventList: [eventName] })
+  }
+  off(eventName, callback) {
+    return detachEvent(this, eventName, callback)
+  }
+  emit(eventName, config) {
+    return executeEvent(this, eventName, config)
+  }
 }
-
-Object.assign(Emit.prototype, _)

@@ -1,68 +1,37 @@
+import { is, extend } from "https://x-titan.github.io/utils/index.js"
 import Core from "./core.js"
 
 const { toStringTag } = Symbol
-const {
-  hasOwnProperty: hasOwn,
-  getOwnPropertyDescriptor: getDesc,
-} = Object
 
 export default class Base extends Core {
   [toStringTag] = this.constructor.name || "Base"
 
-  toString() {
-    return "[base " + (this[toStringTag] || "Base") + "]"
-  }
+  extend(obj) { return extend.pro(this, obj) }
 
-  extend(obj) {
-    const t = typeof obj
+  mixin(...sources) { return extend(this, ...sources) }
 
-    if (!(t === "object" || t === "function")) {
-      throw new Error("Required a object")
-    }
-    for (const key in obj) {
-      if (hasOwn.call(obj, key)) {
-        defineProperty(this, key, getDesc(obj, key))
-      }
-    }
-    return this
-  }
+  toString() { return `[base ${this[toStringTag]}]` }
 
-  /** @param {new unknown | string} value */
   is(value) {
-    if (value === null || value === undefined) {
-      return false
-    }
-    const t = typeof value
+    if (value === null || value === undefined) { return false }
 
-    if (t === "string") {
-      return this.constructor.name === value
-    }
-    if (t === "function") {
-      return this instanceof value
-    }
+    const t = is(value)
+
+    if (t === "string") { return this.constructor.name === value }
+    if (t === "function") { return this instanceof value }
+    if (t === "object") { return this === value }
+
     return false
   }
 
-  mixin(...sources) {
-    const self = this
-    const t = typeof self
-
-    if (!(t === "object" || t === "function")) {
-      throw new TypeError("Invalid arguments. Reqguired a object")
-    }
-    for (const source of sources) {
-      if (typeof source === "object") {
-        for (const key in source) {
-          if (hasOwn.call(source, key)) {
-            self[key] = source[key]
-          }
-        }
-      }
-    }
-    return self
+  static type(value) {
+    if (value === null) return "null"
+    if (value instanceof Base) return "base"
+    if (value instanceof Core) return "core"
+    if (Array.isArray(value)) return "array"
   }
 
-  static toString() {
-    return `class ${this.name || "Base"} { [native code] }`
-  }
+  static isBase(value) { return value instanceof Base }
+
+  static toString() { return `class ${this.name} { [base code] }` }
 }

@@ -1,4 +1,7 @@
-const { setPrototypeOf: sProt, create } = Object
+const {
+  create,
+  setPrototypeOf: set,
+} = Object
 
 export default function Core() {
   return (
@@ -8,5 +11,5 @@ export default function Core() {
   )
 }
 
-sProt(Core, Core.prototype = create(null))
+set(Core, Core.prototype = create(null))
 Core.prototype.constructor = Core

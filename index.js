@@ -1,8 +1,7 @@
+import "https://x-titan.github.io/utils/index.js"
 import Core from "./core.js"
 import Base from "./base.js"
-import Utils from "./utils.js"
-import Mono from "./mono.js"
 import Emit from "./emit.js"
-import NameSpace from "./namespace.js"
+import Mono from "./mono.js"
 
-export { Base, Core, Emit, Mono, NameSpace, Utils }
+export { Core, Base, Emit, Mono }
