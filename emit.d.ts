@@ -5,6 +5,6 @@ declare class Emit extends Base {
   addListener(eventName: string | symbol, callback: (...args: any[]) => void, options: ?{ once: boolean }): this
   removeAllListenter(eventName: string | symbol): this
   removeListenter(eventName: string | symbol, callback: (...args: any[]) => void): this
-  emit(eventName: string | symbol, ...args: any[]): this
+  emit(eventName: string | symbol, config:{args: any[]}): this
 }
 export default Emit

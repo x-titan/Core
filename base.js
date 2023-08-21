@@ -4,7 +4,10 @@ import Core from "./core.js"
 const { toStringTag } = Symbol
 
 export default class Base extends Core {
-  [toStringTag] = this.constructor.name || "Base"
+  constructor() {
+    super()
+    this[toStringTag] = (this.constructor.name || "Base")
+  }
 
   extend(obj) { return extend.pro(this, obj) }
 
@@ -12,7 +15,7 @@ export default class Base extends Core {
 
   toString() { return `[base ${this[toStringTag]}]` }
 
-  is(value) {
+  instanceof(value) {
     if (value === null || value === undefined) { return false }
 
     const t = is(value)
@@ -33,5 +36,5 @@ export default class Base extends Core {
 
   static isBase(value) { return value instanceof Base }
 
-  static toString() { return `class ${this.name} { [base code] }` }
+  static toString() { return `class ${this.name || "Base"} { [base code] }` }
 }

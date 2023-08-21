@@ -24,7 +24,7 @@ function initEmit(target, cfg) {
       if (isEventName(name)) { target[EMIT][name] = [] }
     })
     if (is.bool(cfg.configurable)) {
-
+      // PASS
     }
   }
 
@@ -57,7 +57,7 @@ function attachEvent(target, eventName, callback, config) {
   validate(is.func, callback)
   e.push(callback)
 
-  if (isObj(config)) {
+  if (is.obj(config)) {
     if (typeof config.once === "boolean") {
       callback.once = config.once
     }
@@ -74,7 +74,7 @@ function executeEvent(target, eventName, config) {
   let args = []
 
   if (is.obj(config)) {
-    if (is.arr(config.args)) args = config.args
+    if (is.array(config.args)) args = config.args
   }
 
   each.reverse(e, (fn, i) => {
@@ -86,9 +86,6 @@ function executeEvent(target, eventName, config) {
 }
 
 export default class Emit extends Base {
-  constructor() {
-
-  }
   addEventListener(eventName, callback, config) {
     return attachEvent(this, eventName, callback, config)
   }
