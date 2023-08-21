@@ -1,7 +1,7 @@
 import {
   is,
   each,
-  validateType,
+  validate,
 } from "https://x-titan.github.io/utils/index.js"
 import Base from "./base.js"
 
@@ -13,7 +13,7 @@ function isEventName(value) {
 }
 
 function initEmit(target, cfg) {
-  validateType(is.obj, target)
+  validate(is.obj, target)
 
   if (!is.obj(target[EMIT])) {
     target[EMIT] = {}
@@ -33,13 +33,13 @@ function initEmit(target, cfg) {
 
 function getEvent(target, name) {
   const e = initEmit(target)
-  validateType(isEventName, name)
+  validate(isEventName, name)
   if (!e[name]) { e[name] = [] }
   return e[name]
 }
 
 function detachEvent(target, eventName, callback) {
-  validateType(is.func, callback)
+  validate(is.func, callback)
 
   const e = getEvent(target, eventName)
   const i = e.indexOf(callback)
@@ -54,7 +54,7 @@ function detachEvent(target, eventName, callback) {
 
 function attachEvent(target, eventName, callback, config) {
   const e = getEvent(target, eventName)
-  validateType(is.func, callback)
+  validate(is.func, callback)
   e.push(callback)
 
   if (isObj(config)) {

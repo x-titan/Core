@@ -1,6 +1,6 @@
 import {
   is,
-  validateType,
+  validate,
 } from "https://x-titan.github.io/utils/index.js"
 import Base from "./base.js"
 
@@ -28,7 +28,7 @@ class Mono extends Base {
 
     if (!is.func(onerror)) onerror = makeError
 
-    validateType(hasOnListRev, target, onerror)
+    validate(hasOnListRev, target, onerror)
     ctorList.add(target)
     super()
   }
@@ -48,7 +48,7 @@ class Mono extends Base {
    * @param {() => throw} onerror Calling on error
    */
   static mixin(target, onerror) {
-    validateType(is.obj, target)
+    validate(is.obj, target)
 
     const cons = target.constructor
 
@@ -66,8 +66,8 @@ class Mono extends Base {
    * @return {target}
    */
   static mono(target, onerror) {
-    validateType(is.defined, target)
-    validateType.any(is.func, target, target?.constructor)
+    validate(is.defined, target)
+    validate.any(is.func, target, target?.constructor)
 
     const _ = function (...args) {
       return Mono.mixin(new target(...args), onerror)
